@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { isUuid } from '@/lib/validation'
 
+function careMessagesTableMissing(err: { message?: string; code?: string } | null): boolean {
+  const m = err?.message ?? ''
+  return (
+    m.includes('care_messages') &&
+    (m.includes('schema cache') || m.includes('does not exist') || m.includes('Could not find') || err?.code === 'PGRST205')
+  )
+}
+
+const MIGRATION_HINT =
+  'Apply SQL migrations so table public.care_messages exists (see supabase/migrations/*care_messages*.sql), then wait ~1 min or restart PostgREST.'
+
 /** Care-team thread between clinician view and patient view (demo — no auth). */
 export async function GET(req: NextRequest) {
   const patientId = req.nextUrl.searchParams.get('patient_id')
@@ -16,6 +27,17 @@ export async function GET(req: NextRequest) {
     .eq('patient_id', patientId)
     .order('created_at', { ascending: true })
     .limit(200)
+
+  if (error && careMessagesTableMissing(error)) {
+    return NextResponse.json(
+      {
+        messages: [] as const,
+        migrationNeeded: true,
+        hint: MIGRATION_HINT,
+      },
+      { status: 200 }
+    )
+  }
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ messages: data || [] })
@@ -42,6 +64,10 @@ export async function POST(req: NextRequest) {
       .insert({ patient_id, author_role, body: text, topic: topic || 'general' })
       .select()
       .single()
+
+    if (error && careMessagesTableMissing(error)) {
+      return NextResponse.json({ error: 'care_messages table missing', hint: MIGRATION_HINT }, { status: 503 })
+    }
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ message: data })

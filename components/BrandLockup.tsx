@@ -20,10 +20,10 @@ export function BrandLockup({
   const inner = (
     <>
       <div
-        className={`${icon} flex items-center justify-center text-white font-black shrink-0 shadow-lg`}
+        className={`${icon} flex items-center justify-center text-white font-black shrink-0`}
         style={{
-          background: 'linear-gradient(145deg, #0d9488 0%, #2563eb 48%, #7c3aed 100%)',
-          boxShadow: '0 8px 32px rgba(13,148,136,0.35), 0 0 0 1px rgba(255,255,255,0.08) inset',
+          background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+          boxShadow: '0 4px 24px rgba(37,99,235,0.28), inset 0 1px 0 rgba(255,255,255,0.12)',
         }}
       >
         T
@@ -56,18 +56,20 @@ export function HackathonRibbon({ className = '' }: { className?: string }) {
     <div
       className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border backdrop-blur-md ${className}`}
       style={{
-        borderColor: 'rgba(45, 212, 191, 0.35)',
-        background: 'linear-gradient(135deg, rgba(13,148,136,0.2) 0%, rgba(37,99,235,0.12) 50%, rgba(124,58,237,0.1) 100%)',
-        boxShadow: '0 0 40px rgba(45, 212, 191, 0.08), inset 0 1px 0 rgba(255,255,255,0.06)',
+        borderColor: 'rgba(99, 102, 241, 0.35)',
+        background: 'linear-gradient(135deg, rgba(37,99,235,0.18) 0%, rgba(124,58,237,0.12) 100%)',
+        boxShadow: '0 0 32px rgba(59, 130, 246, 0.08), inset 0 1px 0 rgba(255,255,255,0.06)',
       }}
     >
       <span className="relative flex h-2 w-2">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-40" />
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-400 shadow-[0_0_12px_#2dd4bf]" />
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-35" />
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-400" style={{ boxShadow: '0 0 10px rgba(96,165,250,0.8)' }} />
       </span>
-      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-200/95">Boston Study Tour</span>
+      <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: '#93c5fd' }}>
+        Boston Study Tour
+      </span>
       <span className="w-px h-3 bg-white/15 hidden sm:block" aria-hidden />
-      <span className="text-[10px] font-semibold tracking-wide text-white/90 hidden sm:inline">Hackathon Challenge</span>
+      <span className="text-[10px] font-semibold tracking-wide text-slate-200/95 hidden sm:inline">Hackathon Challenge</span>
     </div>
   )
 }

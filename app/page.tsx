@@ -114,7 +114,7 @@ function LiveMonitorCard() {
     <motion.div initial={{ opacity: 0, y: 30, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: 0.5, duration: 0.7, type: 'spring', bounce: 0.3 }}
       className="relative w-full max-w-[440px] float"
-      style={{ filter: `drop-shadow(0 28px 80px rgba(45,212,191,0.18))` }}>
+      style={{ filter: `drop-shadow(0 24px 64px rgba(37,99,235,0.22))` }}>
 
       {/* Main card */}
       <div className="bento bento-premium glow-anim" style={{ borderRadius: 24 }}>
@@ -593,7 +593,7 @@ export default function Home() {
       <section className="py-10 section-border" style={{ background: 'var(--bg-1)' }}>
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           <p className="section-label text-center mb-2">Boston Study Tour · stack</p>
-          <p className="text-center text-xs mb-6 font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--bst-teal)' }}>
+          <p className="text-center text-xs mb-6 font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--kg-accent)' }}>
             Evidence · models · data plane
           </p>
           <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4">
@@ -964,9 +964,9 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="relative rounded-3xl overflow-hidden p-12 md:p-16 text-center bento-premium"
             style={{
-              background: 'linear-gradient(155deg, #061018 0%, #0f172a 38%, #1e1b4b 72%, #0c4a6e 100%)',
-              border: '1px solid rgba(45, 212, 191, 0.22)',
-              boxShadow: '0 0 100px rgba(45, 212, 191, 0.12), 0 40px 120px rgba(0,0,0,0.5)',
+              background: 'linear-gradient(155deg, #0f172a 0%, #1e1b4b 45%, #312e81 100%)',
+              border: '1px solid rgba(99, 102, 241, 0.22)',
+              boxShadow: '0 0 80px rgba(99, 102, 241, 0.12), 0 40px 100px rgba(0,0,0,0.45)',
             }}>
 
             {/* Grid overlay */}
@@ -977,15 +977,15 @@ export default function Home() {
               }} />
 
             {/* Orb */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] max-w-4xl h-56 rounded-full pointer-events-none blur-3xl opacity-30"
-              style={{ background: 'radial-gradient(ellipse, rgba(45,212,191,0.45), transparent 70%)' }} />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] max-w-4xl h-56 rounded-full pointer-events-none blur-3xl opacity-25"
+              style={{ background: 'radial-gradient(ellipse, rgba(99,102,241,0.35), transparent 70%)' }} />
 
             <div className="relative z-10">
               <div
-                className="inline-flex items-center gap-2 text-[11px] font-black tracking-[0.25em] uppercase px-4 py-2 rounded-full mb-6 text-teal-100"
+                className="inline-flex items-center gap-2 text-[11px] font-black tracking-[0.25em] uppercase px-4 py-2 rounded-full mb-6 text-indigo-100"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(13,148,136,0.35), rgba(37,99,235,0.2))',
-                  border: '1px solid rgba(45,212,191,0.35)',
+                  background: 'linear-gradient(135deg, rgba(37,99,235,0.35), rgba(124,58,237,0.25))',
+                  border: '1px solid rgba(99,102,241,0.35)',
                 }}
               >
                 Boston Study Tour
