@@ -29,6 +29,19 @@ export type Database = {
           display_name: string | null
           chart_notes: string | null
           care_status: string | null
+          learning_profile: Record<string, unknown> | null
+        }
+      }
+      patient_clinical_events: {
+        Row: {
+          id: string
+          patient_id: string
+          event_type: string
+          title: string
+          notes: string | null
+          occurred_at: string
+          metadata: Record<string, unknown>
+          created_at: string
         }
       }
       wearable_readings: {
@@ -75,7 +88,7 @@ export type Database = {
           reviewed_by: string | null
           clinician_note: string | null
           reviewed_at: string | null
-          status: 'pending' | 'reviewed' | 'dismissed'
+          status: string
           created_at: string
         }
       }

@@ -16,6 +16,7 @@ import {
   Activity,
 } from 'lucide-react'
 import { usePatientWorkspace } from '@/hooks/usePatientWorkspace'
+import type { PhysiologicalStabilityResult } from '@/lib/stability-score'
 import { ClinicalStoryCard } from '@/components/ClinicalStoryCard'
 import { LongitudinalTimeline } from '@/components/LongitudinalTimeline'
 
@@ -38,6 +39,7 @@ function DashboardPatientContent() {
 
   const [tab, setTab] = useState<Tab>('overview')
   const { patient, anomalies, readings, patternInsight, loading } = usePatientWorkspace(patientId)
+  const [stability, setStability] = useState<PhysiologicalStabilityResult | null>(null)
 
   useEffect(() => {
     const t = searchParams.get('tab')
@@ -45,6 +47,16 @@ function DashboardPatientContent() {
       setTab(t)
     }
   }, [searchParams])
+
+  useEffect(() => {
+    fetch(`/api/stability?patient_id=${patientId}&days=30`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.stability) setStability(d.stability)
+        else setStability(null)
+      })
+      .catch(() => setStability(null))
+  }, [patientId])
 
   const highCount = useMemo(() => anomalies.filter(a => a.severity === 'high').length, [anomalies])
   const pending = useMemo(() => anomalies.filter(a => a.status === 'pending').length, [anomalies])
@@ -123,8 +135,14 @@ function DashboardPatientContent() {
 
       {tab === 'overview' && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          <div className="grid sm:grid-cols-3 gap-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[
+              {
+                label: 'Physiological stability',
+                value: stability ? `${stability.score}` : '—',
+                sub: stability ? `${stability.trend}` : '',
+                color: 'var(--text)',
+              },
               { label: 'Open alerts', value: anomalies.length, color: 'var(--text)' },
               { label: 'High severity', value: highCount, color: '#f87171' },
               { label: 'Pending review', value: pending, color: '#fbbf24' },
@@ -134,6 +152,11 @@ function DashboardPatientContent() {
                   {s.value}
                 </div>
                 <div className="kg-metric-label">{s.label}</div>
+                {'sub' in s && s.sub ? (
+                  <div className="text-[10px] mt-1 capitalize" style={{ color: 'var(--text-3)' }}>
+                    {s.sub}
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>

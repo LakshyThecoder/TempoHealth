@@ -4,6 +4,22 @@ import { isUuid } from '@/lib/validation'
 import { detectAnomalies, applyMultiSignalBoost } from '@/lib/anomaly'
 import { generateClinicalContext, getRelevantEvidence } from '@/lib/rag'
 import { ANOMALY_METRICS } from '@/lib/metrics'
+import type { LearningProfile } from '@/lib/clinical-learning'
+import { bumpMetricFeedback, detectionThresholdMultiplier } from '@/lib/clinical-learning'
+
+const VALID_STATUSES = [
+  'pending',
+  'acknowledged',
+  'dismissed',
+  'escalated',
+  'monitoring',
+  'reviewed', // legacy alias → acknowledged
+] as const
+
+function normalizeAnomalyStatus(status: string): string {
+  if (status === 'reviewed') return 'acknowledged'
+  return status
+}
 
 export async function POST(req: NextRequest) {
   const { patient_id } = await req.json()
@@ -12,11 +28,13 @@ export async function POST(req: NextRequest) {
 
   const { data: patient } = await supabase
     .from('patients')
-    .select('condition')
+    .select('condition, learning_profile')
     .eq('id', patient_id)
     .single()
 
   if (!patient) return NextResponse.json({ error: 'Patient not found' }, { status: 404 })
+
+  const learningProfile = patient.learning_profile as LearningProfile | null | undefined
 
   const { data: baselines } = await supabase
     .from('baselines')
@@ -50,8 +68,11 @@ export async function POST(req: NextRequest) {
       std: baselineMap[m].std,
     }))
 
-    const detected = detectAnomalies(metricReadings)
-    const boosted = applyMultiSignalBoost(detected)
+    const detectedParts = metricReadings.flatMap(mr => {
+      const mult = detectionThresholdMultiplier(mr.metric, learningProfile)
+      return detectAnomalies([mr], 1.5 * mult)
+    })
+    const boosted = applyMultiSignalBoost(detectedParts)
     const flagged = boosted.filter(a => a.isAnomaly && a.severity !== 'low')
 
     for (const anomaly of flagged) {
@@ -130,17 +151,32 @@ export async function PATCH(req: NextRequest) {
     typeof body.clinician_note === 'string' ? body.clinician_note.trim().slice(0, 4000) : undefined
 
   if (!id || !isUuid(id)) return NextResponse.json({ error: 'valid id (UUID) required' }, { status: 400 })
-  if (!status || !['pending', 'reviewed', 'dismissed'].includes(status)) {
-    return NextResponse.json({ error: 'status must be pending, reviewed, or dismissed' }, { status: 400 })
+  if (!status || !(VALID_STATUSES as readonly string[]).includes(status)) {
+    return NextResponse.json(
+      {
+        error:
+          'status must be pending, acknowledged, dismissed, escalated, monitoring (reviewed accepted as legacy)',
+      },
+      { status: 400 }
+    )
   }
 
-  const reviewed_at =
-    status === 'reviewed' || status === 'dismissed' ? new Date().toISOString() : null
+  const normalized = normalizeAnomalyStatus(status)
+
+  const { data: rowMeta, error: metaErr } = await supabase
+    .from('anomalies')
+    .select('patient_id, metric')
+    .eq('id', id)
+    .single()
+
+  if (metaErr || !rowMeta) return NextResponse.json({ error: 'Anomaly not found' }, { status: 404 })
+
+  const reviewed_at = normalized !== 'pending' ? new Date().toISOString() : null
 
   const { data, error } = await supabase
     .from('anomalies')
     .update({
-      status,
+      status: normalized,
       reviewed_by: reviewed_by ?? undefined,
       ...(clinician_note !== undefined ? { clinician_note: clinician_note || null } : {}),
       reviewed_at,
@@ -150,5 +186,22 @@ export async function PATCH(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  if (normalized !== 'pending') {
+    const kind = normalized === 'dismissed' ? 'noise' : 'useful'
+    const { data: patientRow } = await supabase
+      .from('patients')
+      .select('learning_profile')
+      .eq('id', rowMeta.patient_id)
+      .single()
+
+    const nextProfile = bumpMetricFeedback(
+      patientRow?.learning_profile as LearningProfile | null | undefined,
+      rowMeta.metric,
+      kind
+    )
+    await supabase.from('patients').update({ learning_profile: nextProfile }).eq('id', rowMeta.patient_id)
+  }
+
   return NextResponse.json({ anomaly: data })
 }

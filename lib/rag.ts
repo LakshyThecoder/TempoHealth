@@ -138,22 +138,24 @@ export async function generatePreVisitBrief(
   const medCount = anomalies.filter(a => a.severity === 'medium').length
   const topAnomalies = anomalies.slice(0, 5)
 
-  const prompt = `Generate a pre-visit brief for a cardiologist reviewing wearable data before seeing a patient.
+  const prompt = `Generate a structured PRE-VISIT CLINICAL SUMMARY for a cardiologist — wearable-assisted remote monitoring (decision support only).
 
 Patient: ${patientName} | Condition: ${condition}
-Monitoring period: past ${periodDays} days
+Monitoring window: past ${periodDays} days
 Alert summary: ${highCount} HIGH severity, ${medCount} MEDIUM severity flags
 
 Top flagged signals:
 ${topAnomalies.map((a, i) => `${i + 1}. ${a.metric}: value ${a.value.toFixed(1)} vs baseline ${a.baselineMean.toFixed(1)} (${a.severity})\n   Context: ${a.clinical_context || 'pending'}`).join('\n')}
 
-Generate a structured pre-visit brief with these exact sections:
-SUMMARY: (2 sentences on overall status)
-TOP CHANGES: (3 bullet points of most important signals)
-SUGGESTED QUESTIONS: (2-3 questions to ask the patient)
-CLINICAL CONSIDERATIONS: (1-2 evidence-based points)
+Use EXACTLY these sections (headings verbatim):
+KEY CHANGES SINCE LAST PERIOD — 2–3 bullets focused on trajectory vs baseline (not raw numbers only).
+TOP ANOMALIES — numbered list (max 5) with severity + why it might matter + uncertainty.
+TREND SUMMARY — one paragraph on improving vs deteriorating physiology based on signal clusters (hypothesis language).
+UNRESOLVED RISKS — bullets for patterns still needing confirmation or follow-up data.
+SUGGESTED QUESTIONS — 3–4 clinician questions for the visit (symptoms, meds, adherence, sleep, stress).
+CONFIDENCE — label Low/Medium/High and cite data density limits (gaps in sleep/activity/HRV if inferable from narratives).
 
-Under 250 words. Clinical language. End with: "[Decision support tool — clinician judgment required]"`
+Under 320 words. Calibrated clinical language; never definitive diagnosis. End with: "[Decision support tool — clinician judgment required]"`
 
   const response = await mistral.chat.complete({
     model: 'mistral-large-latest',

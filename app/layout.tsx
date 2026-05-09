@@ -7,8 +7,9 @@ import './globals.css'
 /** Display headings use `--font-display` from globals (system serif stack). Avoids build-time fetch to Google Fonts (offline / locked-down CI). To use Fraunces again: `next/font/google` + network at build time. */
 
 export const metadata: Metadata = {
-  title: 'TempoHealth — Wearable-to-Clinical Insight',
-  description: 'AI-powered longitudinal wearable monitoring for cardiovascular patients. Personalized anomaly detection with RAG-grounded clinical context.',
+  title: 'TempoHealth — Boston Study Tour Hackathon Challenge',
+  description:
+    'Boston Study Tour Hackathon Challenge submission — AI-powered wearable-to-clinical intelligence: personalized anomaly detection, human-in-the-loop learning, RAG-grounded context, and clinician-ready Pre-Visit Briefs.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

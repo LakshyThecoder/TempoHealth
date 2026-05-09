@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { BrandLockup, HackathonRibbon } from '@/components/BrandLockup';
 import { DEMO_PRIMARY_PATIENT_ID, DEMO_PORTAL_FITBIT_ID } from '@/lib/demo';
 import { DATASET_PROVENANCE } from '@/lib/metrics';
 
@@ -45,13 +46,7 @@ function NavBar() {
     }`} style={{ borderColor: 'var(--border)' }}>
       <div className="max-w-6xl mx-auto px-5 sm:px-8 h-[60px] flex items-center justify-between gap-6">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-black text-xs"
-            style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}>T</div>
-          <span className="font-bold text-[15px]" style={{ color: 'var(--text)', letterSpacing: '-0.02em' }}>
-            Tempo<span className="gt">Health</span>
-          </span>
-        </Link>
+        <BrandLockup href="/" size="sm" subtitle />
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-0.5">
@@ -119,10 +114,10 @@ function LiveMonitorCard() {
     <motion.div initial={{ opacity: 0, y: 30, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: 0.5, duration: 0.7, type: 'spring', bounce: 0.3 }}
       className="relative w-full max-w-[440px] float"
-      style={{ filter: `drop-shadow(0 24px 64px rgba(37,99,235,0.22))` }}>
+      style={{ filter: `drop-shadow(0 28px 80px rgba(45,212,191,0.18))` }}>
 
       {/* Main card */}
-      <div className="bento glow-anim" style={{ borderRadius: 24 }}>
+      <div className="bento bento-premium glow-anim" style={{ borderRadius: 24 }}>
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
@@ -507,7 +502,7 @@ export default function Home() {
       {/* ═══════════════════════════════════════
           HERO
       ═══════════════════════════════════════ */}
-      <section className="hero-gradient relative overflow-hidden pt-[90px] pb-0 min-h-[100svh] flex flex-col">
+      <section className="hero-gradient hero-bst relative overflow-hidden pt-[90px] pb-0 min-h-[100svh] flex flex-col">
         {/* Atmospheric orbs */}
         <div className="orb orb-1 pointer-events-none" />
         <div className="orb orb-2 pointer-events-none" />
@@ -516,26 +511,26 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-5 sm:px-8 flex-1 flex flex-col lg:flex-row items-center gap-10 lg:gap-20 py-16 relative z-10">
           {/* Left */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}
-              className="badge badge-blue w-fit">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 pulse-dot" />
-              AI in Healthcare · 2026 Hackathon
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+              <HackathonRibbon />
             </motion.div>
 
             <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.08, ease: [0.22, 1, 0.36, 1] as const }}
               className="display-xl" style={{ color: 'var(--text)' }}>
-              Stop missing<br/>
-              <span className="gt">early warning</span><br/>
-              signs.
+              Clinical intelligence<br/>
+              <span className="gt-bst">that actually lands</span><br/>
+              <span className="text-[0.35em] sm:text-[0.42em] font-display font-semibold not-italic tracking-tight opacity-90" style={{ color: 'var(--text-2)' }}>
+                wearable → baseline → alert → evidence → care
+              </span>
             </motion.h1>
 
             <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.2 }}
-              className="text-base sm:text-lg leading-relaxed max-w-md"
+              className="text-base sm:text-lg leading-relaxed max-w-lg"
               style={{ color: 'var(--text-2)', letterSpacing: '-0.01em' }}>
-              TempoHealth learns <em>your</em> cardiac baseline from 90 days of wearable data —
-              then alerts clinicians the moment your pattern deviates, grounded in peer-reviewed evidence.
+              <strong style={{ color: 'var(--text)' }}>Boston Study Tour Hackathon Challenge</strong> — TempoHealth learns{' '}
+              <em>your</em> cardiac baseline from longitudinal wearables, surfaces human-in-the-loop decisions, and grounds every flag in retrievable clinical evidence.
             </motion.p>
 
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
@@ -575,7 +570,7 @@ export default function Home() {
                 ))}
               </div>
               <span className="text-xs" style={{ color: 'var(--text-3)' }}>
-                Built for clinicians & patients · Clinical-grade insights
+                Built to demo · Designed to ship · Judged like production
               </span>
             </motion.div>
           </div>
@@ -597,7 +592,10 @@ export default function Home() {
       ═══════════════════════════════════════ */}
       <section className="py-10 section-border" style={{ background: 'var(--bg-1)' }}>
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
-          <p className="section-label text-center mb-6">Evidence & infrastructure</p>
+          <p className="section-label text-center mb-2">Boston Study Tour · stack</p>
+          <p className="text-center text-xs mb-6 font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--bst-teal)' }}>
+            Evidence · models · data plane
+          </p>
           <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4">
             {[
               { name: 'PubMed',       e: '📖' },
@@ -929,9 +927,9 @@ export default function Home() {
       ═══════════════════════════════════════ */}
       <Section className="py-24 max-w-6xl mx-auto px-5 sm:px-8">
         <motion.div variants={up()} className="mb-14">
-          <p className="section-label mb-3">Hackathon Scoring</p>
+          <p className="section-label mb-3">Challenge rubric</p>
           <h2 className="heading" style={{ color: 'var(--text)' }}>
-            Built to score <span className="gt">perfectly.</span>
+            Boston Study Tour — <span className="gt-bst">built to win judges.</span>
           </h2>
         </motion.div>
 
@@ -964,33 +962,39 @@ export default function Home() {
       ═══════════════════════════════════════ */}
       <section className="py-8 px-5">
         <div className="max-w-4xl mx-auto">
-          <div className="relative rounded-3xl overflow-hidden p-12 md:p-16 text-center"
-            style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #0c0a1f 100%)',
-              border: '1px solid rgba(99,102,241,0.20)',
-              boxShadow: '0 0 80px rgba(99,102,241,0.15)' }}>
+          <div className="relative rounded-3xl overflow-hidden p-12 md:p-16 text-center bento-premium"
+            style={{
+              background: 'linear-gradient(155deg, #061018 0%, #0f172a 38%, #1e1b4b 72%, #0c4a6e 100%)',
+              border: '1px solid rgba(45, 212, 191, 0.22)',
+              boxShadow: '0 0 100px rgba(45, 212, 191, 0.12), 0 40px 120px rgba(0,0,0,0.5)',
+            }}>
 
             {/* Grid overlay */}
-            <div className="absolute inset-0 pointer-events-none opacity-10"
+            <div className="absolute inset-0 pointer-events-none opacity-[0.12]"
               style={{
-                backgroundImage: 'linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)',
+                backgroundImage: 'linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px)',
                 backgroundSize: '40px 40px',
               }} />
 
             {/* Orb */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 rounded-full pointer-events-none blur-3xl opacity-25"
-              style={{ background: 'radial-gradient(ellipse, #6366f1, transparent)' }} />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] max-w-4xl h-56 rounded-full pointer-events-none blur-3xl opacity-30"
+              style={{ background: 'radial-gradient(ellipse, rgba(45,212,191,0.45), transparent 70%)' }} />
 
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 text-xs font-bold tracking-widest uppercase
-                px-3 py-1.5 rounded-full mb-6 text-indigo-300"
-                style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)' }}>
-                Try TempoHealth
+              <div
+                className="inline-flex items-center gap-2 text-[11px] font-black tracking-[0.25em] uppercase px-4 py-2 rounded-full mb-6 text-teal-100"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(13,148,136,0.35), rgba(37,99,235,0.2))',
+                  border: '1px solid rgba(45,212,191,0.35)',
+                }}
+              >
+                Boston Study Tour
               </div>
-              <h2 className="display mb-4 text-white">
-                Try TempoHealth now.
+              <h2 className="display mb-4 text-white tracking-tight">
+                Ship the <span className="gt-bst">demo they remember.</span>
               </h2>
-              <p className="text-lg mb-8 max-w-md mx-auto" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                Explore anomaly detection, evidence-backed context, and Pre-Visit Briefs — powered by your longitudinal wearable pipeline.
+              <p className="text-lg mb-8 max-w-lg mx-auto leading-relaxed" style={{ color: 'rgba(255,255,255,0.58)' }}>
+                Live anomaly pipeline, clinician loop, Fitbit cohort ingest, RAG briefs — one cohesive story for the Hackathon Challenge floor.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link
@@ -1017,21 +1021,17 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-7 h-7 rounded-lg text-white flex items-center justify-center font-black text-xs"
-                  style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}>T</div>
-                <span className="font-bold" style={{ color: 'var(--text)', letterSpacing: '-0.02em' }}>
-                  Tempo<span className="gt">Health</span>
-                </span>
+              <div className="mb-4">
+                <BrandLockup href="/" size="sm" subtitle />
               </div>
-              <p className="text-xs leading-relaxed max-w-[180px]" style={{ color: 'var(--text-3)' }}>
-                AI-powered cardiac anomaly detection. Built for the AI in Healthcare 2026 Hackathon.
+              <p className="text-xs leading-relaxed max-w-[220px]" style={{ color: 'var(--text-3)' }}>
+                Boston Study Tour <strong style={{ color: 'var(--text-2)' }}>Hackathon Challenge</strong> submission — wearable-native cardiac intelligence with clinician-grade UX.
               </p>
             </div>
             {[
-              { h: 'Product', items: ['Clinician Dashboard','Patient View','AI Pipeline','Pre-Visit Brief'] },
+              { h: 'Product', items: ['Clinician workstation','Patient portal','AI Nurse intake','Pre-Visit Brief'] },
               { h: 'Stack',   items: ['Next.js 16','Supabase + pgvector','Mistral AI','Framer Motion'] },
-              { h: 'Hackathon', items: ['AI in Healthcare 2026','Team TempoHealth','Pitch Deck','GitHub Repo'] },
+              { h: 'Challenge', items: ['Boston Study Tour 2026','Human-in-the-loop','Real Fitbit cohort','Evidence-first AI'] },
             ].map(col => (
               <div key={col.h}>
                 <p className="text-xs font-semibold mb-4" style={{ color: 'var(--text)' }}>{col.h}</p>
@@ -1053,7 +1053,7 @@ export default function Home() {
           <div className="separator mb-6" />
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-              © 2026 TempoHealth — AI in Healthcare Hackathon
+              © 2026 TempoHealth · Boston Study Tour Hackathon Challenge
             </p>
             <div className="flex items-center gap-4">
               <ThemeToggle />

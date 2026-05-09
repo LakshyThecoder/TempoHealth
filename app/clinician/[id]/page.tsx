@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useMemo } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -11,6 +11,11 @@ import { DATASET_PROVENANCE } from '@/lib/metrics'
 import { ClinicalStoryCard } from '@/components/ClinicalStoryCard'
 import { LongitudinalTimeline } from '@/components/LongitudinalTimeline'
 import type { ClinicalPatternInsight } from '@/lib/clinical-patterns'
+import { buildStructuredWhyExplanation } from '@/lib/explanations'
+import { suppressEphemeralDuplicates, topIssuesThisWeek } from '@/lib/alert-fatigue'
+import { EventCorrelationPanel } from '@/components/EventCorrelationPanel'
+import type { PhysiologicalStabilityResult } from '@/lib/stability-score'
+import { BrandLockup } from '@/components/BrandLockup'
 
 const AnomalyMetricSparkline = dynamic(() => import('@/components/clinician/AnomalyMetricSparkline'), {
   ssr: false,
@@ -38,6 +43,7 @@ interface Patient {
   display_name?: string | null
   chart_notes?: string | null
   care_status?: string | null
+  learning_profile?: { metricSignals?: Record<string, { useful?: number; noise?: number }> } | null
 }
 interface Anomaly {
   id: string; metric: string; triggered_at: string; z_score: number
@@ -153,6 +159,29 @@ export default function ClinicianPage({ params }: { params: Promise<{ id: string
   const [patternInsight, setPatternInsight] = useState<ClinicalPatternInsight | null>(null)
   const [patternLoading, setPatternLoading] = useState(true)
   const [reviewNote, setReviewNote] = useState('')
+  const [stabilityPack, setStabilityPack] = useState<{
+    stability: PhysiologicalStabilityResult
+    phenotype: { labels: string[] }
+    recovery: { direction: string; summary: string; confidence: string }
+    correlation_hints: string[]
+  } | null>(null)
+  const [clinicalEvents, setClinicalEvents] = useState<
+    Array<{ id: string; event_type: string; title: string; notes: string | null; occurred_at: string }>
+  >([])
+
+  function refreshClinicalSignals() {
+    fetch(`/api/stability?patient_id=${patientId}&days=30`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.stability) setStabilityPack(d)
+        else setStabilityPack(null)
+      })
+      .catch(() => setStabilityPack(null))
+    fetch(`/api/clinical-events?patient_id=${patientId}`)
+      .then(r => r.json())
+      .then(d => setClinicalEvents(d.events || []))
+      .catch(() => setClinicalEvents([]))
+  }
 
   useEffect(() => {
     fetch(`/api/patients?id=${patientId}`).then(r => r.json()).then(d => d.patient && setPatient(d.patient))
@@ -161,6 +190,7 @@ export default function ClinicianPage({ params }: { params: Promise<{ id: string
       setReadings(d.readings || [])
       setBaselines(d.baselines || {})
     })
+    refreshClinicalSignals()
   }, [patientId])
 
   useEffect(() => {
@@ -221,6 +251,10 @@ export default function ClinicianPage({ params }: { params: Promise<{ id: string
     if (next) {
       setAnomalies(prev => prev.map(a => (a.id === id ? { ...a, ...next } : a)))
       if (selectedAnomaly?.id === id) setSelectedAnomaly(next)
+      refreshClinicalSignals()
+      fetch(`/api/patients?id=${patientId}`)
+        .then(r => r.json())
+        .then(p => p.patient && setPatient(p.patient))
     } else {
       setAnomalies(prev => prev.map(a => (a.id === id ? { ...a, status } : a)))
       if (selectedAnomaly?.id === id) setSelectedAnomaly(prev => (prev ? { ...prev, status } : prev))
@@ -271,6 +305,20 @@ export default function ClinicianPage({ params }: { params: Promise<{ id: string
     }))
   const baseline = baselines[selectedMetric]
 
+  const alertDigest = useMemo(() => {
+    const suppressed = suppressEphemeralDuplicates(anomalies)
+    return {
+      activeCount: suppressed.length,
+      rawCount: anomalies.length,
+      top: topIssuesThisWeek(suppressed, 3),
+    }
+  }, [anomalies])
+
+  const structuredWhy = useMemo(() => {
+    if (!selectedAnomaly) return null
+    return buildStructuredWhyExplanation(selectedAnomaly.metric, readings, selectedAnomaly.triggered_at)
+  }, [selectedAnomaly, readings])
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg)' }}>
       <div className="kg-accent-bar" aria-hidden />
@@ -278,30 +326,9 @@ export default function ClinicianPage({ params }: { params: Promise<{ id: string
       <header className="kg-dash-header h-14 sticky top-0 z-30 flex items-center shrink-0">
         <div className="w-full max-w-[1400px] mx-auto px-6 flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-3">
-            <Link
-              href="/"
-              className="flex shrink-0 items-center gap-2 px-2 py-1 rounded-lg transition-colors hover:bg-white/5"
-            >
-              <div
-                className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs font-black"
-                style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}
-              >
-                T
-              </div>
-              <span className="text-sm font-bold" style={{ color: 'var(--text)', letterSpacing: '-0.02em' }}>
-                Tempo
-                <span
-                  style={{
-                    background: 'linear-gradient(135deg, #60a5fa, #c084fc)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
-                  Health
-                </span>
-              </span>
-            </Link>
+            <div className="shrink-0 px-2 py-1 rounded-lg transition-colors hover:bg-white/5">
+              <BrandLockup href="/" size="sm" subtitle={false} />
+            </div>
             <div className="w-px h-4 shrink-0" style={{ background: 'var(--border-2)' }} />
             <Link
               href="/dashboard"
@@ -395,6 +422,13 @@ export default function ClinicianPage({ params }: { params: Promise<{ id: string
                   <span className="text-slate-700">·</span>
                   <span>{patient?.medications?.join(' · ')}</span>
                 </div>
+                {patient?.learning_profile?.metricSignals &&
+                  Object.keys(patient.learning_profile.metricSignals).length > 0 && (
+                    <p className="text-[10px] text-slate-500 mt-1.5 max-w-2xl">
+                      Learning loop: per-metric useful vs noise tallies from your actions — detection thresholds adapt when a
+                      signal is often dismissed.
+                    </p>
+                  )}
               </div>
             </div>
 
@@ -437,6 +471,75 @@ export default function ClinicianPage({ params }: { params: Promise<{ id: string
         </motion.div>
 
         <ClinicalStoryCard insight={patternInsight} loading={patternLoading} />
+
+        {stabilityPack && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+            <div className="kg-metric">
+              <div className="kg-metric-value font-bold gt" style={{ color: 'var(--text)' }}>
+                {stabilityPack.stability.score}
+              </div>
+              <div className="kg-metric-label">Physiological stability (0–100)</div>
+              <p className="text-[10px] mt-1" style={{ color: 'var(--text-3)' }}>
+                Trend: {stabilityPack.stability.trend} · data coverage {Math.round(stabilityPack.stability.dataCompleteness * 100)}%
+              </p>
+            </div>
+            <div className="kg-metric">
+              <div className="kg-metric-value font-bold capitalize" style={{ color: 'var(--text)' }}>
+                {stabilityPack.recovery.direction}
+              </div>
+              <div className="kg-metric-label">Recovery trajectory</div>
+              <p className="text-[10px] mt-1 line-clamp-2" style={{ color: 'var(--text-3)' }}>
+                {stabilityPack.recovery.summary}
+              </p>
+            </div>
+            <div className="kg-metric sm:col-span-2">
+              <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--text-3)' }}>
+                Light phenotype tags
+              </div>
+              <p className="text-xs leading-snug" style={{ color: 'var(--text-2)' }}>
+                {stabilityPack.phenotype.labels.join(' · ')}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <EventCorrelationPanel
+          patientId={patientId}
+          events={clinicalEvents}
+          correlationHints={stabilityPack?.correlation_hints ?? []}
+          onRefresh={refreshClinicalSignals}
+        />
+
+        <div className="mb-6 rounded-2xl border border-slate-800 bg-slate-900/40 px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <span className="text-xs font-semibold text-white">Alert fatigue reduction</span>
+            <span className="text-[10px] text-slate-500">
+              {alertDigest.rawCount > alertDigest.activeCount
+                ? `Merged ephemeral duplicates · ${alertDigest.rawCount} raw → ${alertDigest.activeCount} active`
+                : `${alertDigest.activeCount} actionable signals`}
+            </span>
+          </div>
+          <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Top issues this week (distinct metrics)</p>
+          <div className="flex flex-wrap gap-2">
+            {alertDigest.top.length === 0 ? (
+              <span className="text-xs text-slate-500">No clustered priorities in the last 7 days.</span>
+            ) : (
+              alertDigest.top.map(a => (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedAnomaly(a)
+                    setTab('anomalies')
+                  }}
+                  className="text-xs px-2.5 py-1 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800"
+                >
+                  {METRIC_LABELS[a.metric] || a.metric} · {a.severity}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
 
         <div className="mb-6">
           <LongitudinalTimeline readings={readings} days={30} />
@@ -483,7 +586,11 @@ export default function ClinicianPage({ params }: { params: Promise<{ id: string
             { label: 'Total Alerts', value: anomalies.length, color: 'var(--text)' },
             { label: 'High Severity', value: highCount, color: '#f87171' },
             { label: 'Pending Review', value: pending, color: '#fbbf24' },
-            { label: 'Reviewed', value: anomalies.filter(a => a.status === 'reviewed').length, color: '#34d399' },
+            {
+              label: 'Acknowledged',
+              value: anomalies.filter(a => a.status === 'acknowledged' || a.status === 'reviewed').length,
+              color: '#34d399',
+            },
           ].map((s, i) => (
             <motion.div
               key={s.label}
@@ -580,12 +687,20 @@ export default function ClinicianPage({ params }: { params: Promise<{ id: string
                         </div>
                         <span>{formatDistanceToNow(parseISO(a.triggered_at), { addSuffix: true })}</span>
                       </div>
-                      <div className={`mt-2 inline-flex items-center text-xs px-2 py-0.5 rounded-full ${
-                        a.status === 'pending' ? 'bg-amber-500/10 text-amber-400' :
-                        a.status === 'reviewed' ? 'bg-green-500/10 text-green-400' :
-                        'bg-slate-800 text-slate-500'
-                      }`}>
-                        {a.status}
+                      <div
+                        className={`mt-2 inline-flex items-center text-xs px-2 py-0.5 rounded-full ${
+                          a.status === 'pending'
+                            ? 'bg-amber-500/10 text-amber-400'
+                            : a.status === 'dismissed'
+                              ? 'bg-slate-800 text-slate-500'
+                              : a.status === 'escalated'
+                                ? 'bg-red-500/15 text-red-400'
+                                : a.status === 'monitoring'
+                                  ? 'bg-blue-500/10 text-blue-400'
+                                  : 'bg-green-500/10 text-green-400'
+                        }`}
+                      >
+                        {a.status === 'reviewed' ? 'acknowledged' : a.status}
                       </div>
                     </motion.button>
                   ))
@@ -612,12 +727,20 @@ export default function ClinicianPage({ params }: { params: Promise<{ id: string
                           Detected {format(parseISO(selectedAnomaly.triggered_at), 'EEEE, MMMM d, yyyy')}
                         </p>
                       </div>
-                      <div className={`text-xs px-3 py-1 rounded-full border ${
-                        selectedAnomaly.status === 'pending' ? 'border-amber-500/30 bg-amber-500/10 text-amber-400' :
-                        selectedAnomaly.status === 'reviewed' ? 'border-green-500/30 bg-green-500/10 text-green-400' :
-                        'border-slate-700 bg-slate-800 text-slate-400'
-                      }`}>
-                        {selectedAnomaly.status}
+                      <div
+                        className={`text-xs px-3 py-1 rounded-full border ${
+                          selectedAnomaly.status === 'pending'
+                            ? 'border-amber-500/30 bg-amber-500/10 text-amber-400'
+                            : selectedAnomaly.status === 'dismissed'
+                              ? 'border-slate-700 bg-slate-800 text-slate-400'
+                              : selectedAnomaly.status === 'escalated'
+                                ? 'border-red-500/30 bg-red-500/10 text-red-400'
+                                : selectedAnomaly.status === 'monitoring'
+                                  ? 'border-blue-500/30 bg-blue-500/10 text-blue-400'
+                                  : 'border-green-500/30 bg-green-500/10 text-green-400'
+                        }`}
+                      >
+                        {selectedAnomaly.status === 'reviewed' ? 'acknowledged' : selectedAnomaly.status}
                       </div>
                     </div>
 
@@ -666,6 +789,28 @@ export default function ClinicianPage({ params }: { params: Promise<{ id: string
                       </div>
                     )}
 
+                    {structuredWhy && (
+                      <div className="mb-5 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-[10px] uppercase tracking-wider text-cyan-400 font-semibold">
+                            AI explanation layer (multi-signal why)
+                          </p>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-600 text-slate-400">
+                            confidence: {structuredWhy.confidence}
+                          </span>
+                        </div>
+                        <p className="text-sm text-slate-100 font-medium mb-2">{structuredWhy.headline}</p>
+                        <ul className="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                          {structuredWhy.contributors.map((c, i) => (
+                            <li key={i}>{c}</li>
+                          ))}
+                        </ul>
+                        <p className="text-[10px] text-slate-600 mt-2">
+                          Rule-based synthesis over adjacent wearable rows — complements LLM narrative below; not causal proof.
+                        </p>
+                      </div>
+                    )}
+
                     {/* Clinical context */}
                     <div className="mb-5">
                       <div className="flex items-center gap-2 mb-3">
@@ -679,6 +824,14 @@ export default function ClinicianPage({ params }: { params: Promise<{ id: string
                         <p className="text-sm text-slate-200 leading-relaxed">
                           {selectedAnomaly.clinical_context || 'Clinical context not yet generated. Run anomaly detection to generate.'}
                         </p>
+                        {stabilityPack && (
+                          <p className="text-[10px] text-slate-500 mt-3 border-t border-purple-500/10 pt-2">
+                            Uncertainty: stability index {stabilityPack.stability.score}/100 ({stabilityPack.stability.trend}).{' '}
+                            {stabilityPack.stability.dataCompleteness < 0.5
+                              ? 'Reduced confidence — sparse wearable coverage in window.'
+                              : stabilityPack.stability.narrativeHint}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -730,26 +883,45 @@ export default function ClinicianPage({ params }: { params: Promise<{ id: string
                       )}
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex gap-2 pt-2">
+                    {/* Actions — clinical decision loop (+ learning) */}
+                    <div className="grid grid-cols-2 gap-2 pt-2">
                       <button
-                        onClick={() => updateStatus(selectedAnomaly.id, 'reviewed')}
-                        disabled={selectedAnomaly.status === 'reviewed'}
-                        className="flex-1 flex items-center justify-center gap-2 bg-green-500/10 hover:bg-green-500/20 disabled:opacity-40 border border-green-500/20 text-green-400 text-sm font-medium py-2.5 rounded-xl transition-all"
+                        type="button"
+                        onClick={() => updateStatus(selectedAnomaly.id, 'acknowledged')}
+                        disabled={['acknowledged', 'dismissed', 'reviewed'].includes(selectedAnomaly.status)}
+                        title="Mark clinically useful — feeds learning"
+                        className="flex items-center justify-center gap-2 bg-green-500/10 hover:bg-green-500/20 disabled:opacity-40 border border-green-500/20 text-green-400 text-xs font-medium py-2.5 rounded-xl transition-all"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        Mark Reviewed
+                        Acknowledge
                       </button>
                       <button
+                        type="button"
                         onClick={() => updateStatus(selectedAnomaly.id, 'dismissed')}
                         disabled={selectedAnomaly.status === 'dismissed'}
-                        className="flex-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 border border-slate-700 text-slate-400 hover:text-white text-sm font-medium py-2.5 rounded-xl transition-all"
+                        className="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 border border-slate-700 text-slate-400 hover:text-white text-xs font-medium py-2.5 rounded-xl transition-all"
                       >
-                        Dismiss
+                        Dismiss (noise)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateStatus(selectedAnomaly.id, 'escalated')}
+                        disabled={selectedAnomaly.status === 'escalated'}
+                        className="flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 disabled:opacity-40 border border-red-500/25 text-red-400 text-xs font-medium py-2.5 rounded-xl transition-all"
+                      >
+                        Escalate
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateStatus(selectedAnomaly.id, 'monitoring')}
+                        disabled={selectedAnomaly.status === 'monitoring'}
+                        className="flex items-center justify-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 disabled:opacity-40 border border-blue-500/25 text-blue-400 text-xs font-medium py-2.5 rounded-xl transition-all"
+                      >
+                        Monitor
                       </button>
                     </div>
+                    <p className="text-[10px] text-slate-600 pt-2">
+                      Patient-specific learning updates when you dismiss (noise) vs acknowledge / escalate / monitor (useful signal).
+                    </p>
                   </motion.div>
                 ) : (
                   <div className="rounded-2xl border border-slate-800 bg-slate-900/40 h-64 flex items-center justify-center text-slate-500 text-sm">

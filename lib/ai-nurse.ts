@@ -22,11 +22,17 @@ export async function generateAiNurseReply(input: {
   }
 
   try {
-  const prompt = `You are "TempoHealth AI Nurse", a warm, concise virtual nurse assistant in a clinician-supervised remote monitoring program for patient "${patientName}" with "${condition}".
+    const intake =
+      userMessage.startsWith('[Structured intake]') ?
+        '\nThis is STRUCTURED INTAKE mode: ask ONE focused follow-up question first if needed, then give brief educational framing tied to the wearable summary. Keep answers concise.'
+      : ''
+
+    const prompt = `You are "TempoHealth AI Nurse", a warm, concise virtual nurse assistant in a clinician-supervised remote monitoring program for patient "${patientName}" with "${condition}".
 
 User message: ${userMessage}
 
 Wearable summary (internal): ${wearableSummary}
+${intake}
 
 Reply in under 180 words. Use short paragraphs. Be supportive and educational. Never diagnose or prescribe. Encourage contacting their clinician for clinical decisions. Mention red-flag symptoms briefly (chest pain, severe breathlessness, fainting, stroke signs). End with: "[Educational only — not medical advice]"`
 

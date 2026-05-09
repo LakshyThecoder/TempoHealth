@@ -19,6 +19,30 @@ const QUICK_PROMPTS = [
   'Explain what “personal baseline” means for my alerts.',
 ]
 
+/** Adaptive intake — targeted questions instead of only open-ended chat. */
+const STRUCTURED_INTAKE = [
+  {
+    label: 'Fatigue severity',
+    message:
+      '[Structured intake] Ask me to rate average fatigue this week from 0 (none) to 10 (severe), then interpret briefly with my wearable context.',
+  },
+  {
+    label: 'Sleep quality change',
+    message:
+      '[Structured intake] Ask how sleep quality changed vs last month (better/same/worse) and tie that to sleep duration trends.',
+  },
+  {
+    label: 'Medication adherence',
+    message:
+      '[Structured intake] Ask about medication adherence this week (missed doses?) without judgment; relate to HR/HRV stability.',
+  },
+  {
+    label: 'Pain / discomfort',
+    message:
+      '[Structured intake] Ask about chest discomfort, palpitations, or breathing symptoms and what makes them better/worse.',
+  },
+] as const
+
 type Props = {
   patientId: string
   patientName: string
@@ -153,6 +177,24 @@ export function AiNursePanel({ patientId, patientName }: Props) {
                 style={{ borderColor: 'var(--border)', color: 'var(--text-2)' }}
               >
                 {q}
+              </button>
+            ))}
+          </div>
+
+          <div className="px-3 py-2 border-b text-[10px] font-bold uppercase tracking-wider" style={{ borderColor: 'var(--border)', color: 'var(--text-3)' }}>
+            Structured intake (clinical-style questioning)
+          </div>
+          <div className="flex flex-wrap gap-2 p-3 border-b" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            {STRUCTURED_INTAKE.map(item => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => send(item.message)}
+                disabled={loading}
+                className="text-left text-[11px] font-semibold px-3 py-2 rounded-lg border transition-colors disabled:opacity-50 hover:bg-white/[0.04]"
+                style={{ borderColor: 'rgba(32,190,255,0.35)', color: 'var(--kg-accent)' }}
+              >
+                {item.label}
               </button>
             ))}
           </div>

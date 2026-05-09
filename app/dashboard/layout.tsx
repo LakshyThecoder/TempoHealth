@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Users, Sparkles, LayoutGrid, ChevronRight } from 'lucide-react'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { BrandLockup } from '@/components/BrandLockup'
 
 const nav = [
   { href: '/dashboard', label: 'Patients', icon: Users, match: (p: string) => p === '/dashboard' },
@@ -28,23 +29,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
       >
         <div className="kg-accent-bar" aria-hidden />
-        <div className="p-4 border-b flex items-center gap-2" style={{ borderColor: 'var(--border)' }}>
-          <Link href="/" className="flex items-center gap-2 min-w-0">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0"
-              style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}
-            >
-              T
-            </div>
-            <div className="min-w-0">
-              <p className="font-bold text-sm truncate" style={{ color: 'var(--text)' }}>
-                Tempo<span className="gt">Health</span>
-              </p>
-              <p className="text-[10px] font-semibold uppercase tracking-wider truncate" style={{ color: 'var(--text-3)' }}>
-                Patient management
-              </p>
-            </div>
-          </Link>
+        <div className="p-4 border-b flex flex-col gap-3" style={{ borderColor: 'var(--border)' }}>
+          <BrandLockup href="/" size="md" subtitle />
+          <p className="text-[10px] font-semibold uppercase tracking-wider truncate pl-0.5" style={{ color: 'var(--text-3)' }}>
+            Care hub · patient management
+          </p>
         </div>
 
         <nav className="p-3 space-y-1 flex-1">

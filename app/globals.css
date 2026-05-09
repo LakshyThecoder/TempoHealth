@@ -46,8 +46,16 @@
     --glow-purple:0 0 40px rgba(168,85,247,0.12);
 
     /* Workspace accent (metrics, filters, tables) */
-    --kg-accent: #20beff;
-    --kg-accent-dim: rgba(32, 190, 255, 0.14);
+    --kg-accent: #2dd4bf;
+    --kg-accent-dim: rgba(45, 212, 191, 0.14);
+
+    /* Boston Study Tour · Hackathon Challenge */
+    --bst-gold: #e8c766;
+    --bst-teal: #2dd4bf;
+    --bst-teal-deep: #0d9488;
+    --bst-navy: #070f1c;
+    --bst-brand-muted: #5eead4;
+    --bst-glow: rgba(45, 212, 191, 0.12);
   }
 
   /* Light mode overrides */
@@ -79,15 +87,23 @@
    DATA WORKSPACE UTILITIES  —  metrics, tables, filters, tabs
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 .light {
-  --kg-accent: #0095c7;
-  --kg-accent-dim: rgba(0, 149, 199, 0.1);
+  --kg-accent: #0d9488;
+  --kg-accent-dim: rgba(13, 148, 136, 0.12);
 }
 
 .kg-accent-bar {
   height: 4px;
   width: 100%;
-  background: linear-gradient(90deg, var(--kg-accent) 0%, #6366f1 52%, #a855f7 100%);
+  background: linear-gradient(
+    90deg,
+    var(--bst-teal-deep, #0d9488) 0%,
+    var(--bst-teal, #2dd4bf) 22%,
+    var(--bst-gold, #e8c766) 52%,
+    #818cf8 78%,
+    #a855f7 100%
+  );
   flex-shrink: 0;
+  box-shadow: 0 0 24px rgba(45, 212, 191, 0.15);
 }
 
 .kg-dash-header {
@@ -396,6 +412,27 @@ body::before {
   background-clip: text;
 }
 
+/* Boston Study Tour brand gradient — gold → teal → iris */
+.gt-bst {
+  background: linear-gradient(135deg, var(--bst-gold, #e8c766) 0%, var(--bst-teal, #2dd4bf) 42%, #818cf8 88%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.light .gt-bst {
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 40%, #4f46e5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand-bst-sub {
+  color: var(--bst-brand-muted);
+}
+.light .brand-bst-sub {
+  color: #0f766e;
+}
+
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    CARD & SURFACE PRIMITIVES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -441,6 +478,19 @@ body::before {
   z-index: 1;
 }
 .bento:hover::before { left: 150%; }
+
+/* Premium lift — flagship panels */
+.bento-premium {
+  background: linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%);
+  border: 1px solid color-mix(in srgb, var(--bst-teal) 18%, var(--border));
+  box-shadow:
+    0 0 0 1px rgba(45, 212, 191, 0.06),
+    0 24px 80px rgba(0, 0, 0, 0.45),
+    0 0 100px rgba(45, 212, 191, 0.06);
+}
+.light .bento-premium {
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+}
 
 /* Glow card variant */
 .card-glow {
@@ -545,6 +595,21 @@ body::before {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    HERO BACKGROUND SYSTEM
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.hero-bst {
+  position: relative;
+  background:
+    radial-gradient(ellipse 140% 90% at 50% -30%, rgba(45, 212, 191, 0.14), transparent 55%),
+    radial-gradient(ellipse 80% 60% at 100% 20%, rgba(232, 199, 102, 0.06), transparent 45%),
+    radial-gradient(ellipse 60% 50% at 0% 80%, rgba(124, 58, 237, 0.08), transparent 50%),
+    linear-gradient(180deg, var(--bst-navy, #070f1c) 0%, var(--bg) 100%);
+}
+.light .hero-bst {
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(13, 148, 136, 0.09), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 90% 30%, rgba(129, 140, 248, 0.06), transparent 45%),
+    linear-gradient(180deg, #f8fafc 0%, var(--bg) 100%);
+}
+
 .hero-gradient {
   position: relative;
 }
