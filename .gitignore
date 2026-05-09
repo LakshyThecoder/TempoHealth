@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Large local Kaggle extract (keep optional — script reads FITBASE_DIR)
+Fitabase Data*/
