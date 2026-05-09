@@ -282,7 +282,7 @@ function LiveMonitorCard() {
       {/* Floating evidence badge */}
       <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 1.2, duration: 0.5 }}
-        className="absolute -right-8 top-16 bento px-3 py-2.5 flex items-center gap-2"
+        className="absolute -right-8 top-6 sm:top-8 bento px-3 py-2.5 flex items-center gap-2"
         style={{ minWidth: 170, boxShadow: 'var(--shadow-lg)' }}>
         <span className="text-lg">📖</span>
         <div>
@@ -552,7 +552,7 @@ export default function Home() {
         <div className="orb orb-2 pointer-events-none" />
         <div className="orb orb-3 pointer-events-none" />
 
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 flex-1 flex flex-col lg:flex-row items-center gap-10 lg:gap-20 py-16 relative z-10">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 flex-1 flex flex-col lg:flex-row items-center lg:items-start gap-10 lg:gap-20 py-12 sm:py-14 lg:py-16 relative z-10">
           {/* Left */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
@@ -641,8 +641,8 @@ export default function Home() {
             </motion.div>
           </div>
 
-          {/* Right — live monitoring card */}
-          <div className="flex-1 flex items-center justify-center w-full max-w-[480px] mx-auto lg:mx-0">
+          {/* Right — live monitoring card (top-aligned on lg so it sits with the headline, not mid-column) */}
+          <div className="flex-1 flex items-center lg:items-start justify-center w-full max-w-[480px] mx-auto lg:mx-0 lg:pt-1">
             <LiveMonitorCard />
           </div>
         </div>
