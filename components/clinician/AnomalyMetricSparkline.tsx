@@ -13,7 +13,7 @@ import { format, parseISO } from 'date-fns'
 
 type Props = {
   /** Wearable rows — metric column read by string key (matches clinician `Reading`). */
-  readings: ReadonlyArray<{ recorded_at: string } & Record<string, unknown>>
+  readings: ReadonlyArray<{ recorded_at: string }>
   metric: string
   baseline: { mean: number; std: number } | undefined
   metricColor: string
@@ -23,10 +23,13 @@ type Props = {
 /** Lazy-loaded with next/dynamic — keeps Recharts off the main clinician bundle until needed. */
 export default function AnomalyMetricSparkline({ readings, metric, baseline, metricColor, unit }: Props) {
   const stroke = metricColor || '#3b82f6'
-  const data = readings.map(r => ({
-    date: format(parseISO(r.recorded_at), 'MMM d'),
-    value: r[metric] as number,
-  }))
+  const data = readings.map(r => {
+    const row = r as Record<string, unknown>
+    return {
+      date: format(parseISO(r.recorded_at), 'MMM d'),
+      value: row[metric] as number,
+    }
+  })
 
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-4 mb-5">

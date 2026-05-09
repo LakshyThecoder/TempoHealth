@@ -1,5 +1,6 @@
 'use client'
 
+import type { Dispatch, SetStateAction } from 'react'
 import { motion } from 'framer-motion'
 import {
   Area,
@@ -72,6 +73,7 @@ function ChartTooltip({
   )
 }
 
+/** Mirrors `Reading` in `app/clinician/[id]/page.tsx` so props stay assignable. */
 interface Reading {
   recorded_at: string
   hr: number | null
@@ -79,21 +81,29 @@ interface Reading {
   spo2: number | null
   steps: number | null
   sleep_duration_min: number | null
-  sleep_deep_min: number | null
+  sleep_deep_min?: number | null
   rr: number | null
   skin_temp_delta: number | null
-  sedentary_min: number | null
-  very_active_min: number | null
-  calories: number | null
+  sedentary_min?: number | null
+  very_active_min?: number | null
+  calories?: number | null
+  metrics_meta?: Record<string, unknown> | null
 }
 
+/** Mirrors `Anomaly` in `app/clinician/[id]/page.tsx`. */
 interface Anomaly {
   id: string
   metric: string
-  severity: 'low' | 'medium' | 'high'
   triggered_at: string
-  value: number
   z_score: number
+  severity: 'low' | 'medium' | 'high'
+  value: number
+  baseline_mean: number
+  clinical_context: string | null
+  evidence_snippets: string[] | null
+  status: string
+  clinician_note?: string | null
+  reviewed_at?: string | null
 }
 
 type Tab = 'anomalies' | 'trends' | 'report' | 'care'
@@ -106,8 +116,8 @@ export type ClinicianTrendsPanelProps = {
   readings: Reading[]
   baselines: Record<string, { mean: number; std: number }>
   anomalies: Anomaly[]
-  setSelectedAnomaly: (a: Anomaly) => void
-  setTab: (t: Tab) => void
+  setSelectedAnomaly: Dispatch<SetStateAction<Anomaly | null>>
+  setTab: Dispatch<SetStateAction<Tab>>
 }
 
 /** Code-split: loads with next/dynamic so Recharts is not on the main clinician chunk until Trends is opened. */
