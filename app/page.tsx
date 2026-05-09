@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { ChevronRight } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { BrandLockup, HackathonRibbon } from '@/components/BrandLockup';
 import { DEMO_PRIMARY_PATIENT_ID, DEMO_PORTAL_FITBIT_ID } from '@/lib/demo';
@@ -18,6 +19,49 @@ const stagger = (s = 0.08) => ({
   hidden: {},
   show:   { transition: { staggerChildren: s } },
 });
+
+const HERO_PIPELINE = ['Wearable', 'Baseline', 'Alert', 'Evidence', 'Care'] as const;
+
+/** Hero only — horizontal journey strip (replaces cramped inline micro-headline). */
+function HeroPipelineStrip() {
+  return (
+    <div
+      className="mt-5 w-full max-w-xl rounded-2xl px-3 py-3 sm:px-4 sm:py-3.5 border backdrop-blur-sm"
+      style={{
+        borderColor: 'var(--border)',
+        background: 'linear-gradient(135deg, rgba(59,130,246,0.06) 0%, rgba(124,58,237,0.05) 100%)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+      }}
+    >
+      <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-2.5" style={{ color: 'var(--text-3)' }}>
+        End-to-end pipeline
+      </p>
+      <div className="flex flex-wrap items-center gap-y-2 gap-x-0">
+        {HERO_PIPELINE.map((label, i) => (
+          <span key={label} className="inline-flex items-center">
+            {i > 0 && (
+              <ChevronRight
+                className="mx-1 sm:mx-1.5 h-3.5 w-3.5 shrink-0 opacity-35"
+                strokeWidth={2.5}
+                aria-hidden
+              />
+            )}
+            <span
+              className="text-[11px] sm:text-xs font-semibold tracking-tight px-2 py-1 rounded-lg"
+              style={{
+                color: 'var(--text)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              {label}
+            </span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /* ────────────────────────────────────────────
    NAVBAR
@@ -519,19 +563,41 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.08, ease: [0.22, 1, 0.36, 1] as const }}
               className="display-xl" style={{ color: 'var(--text)' }}>
               Clinical intelligence<br/>
-              <span className="gt-bst">that actually lands</span><br/>
-              <span className="text-[0.35em] sm:text-[0.42em] font-display font-semibold not-italic tracking-tight opacity-90" style={{ color: 'var(--text-2)' }}>
-                wearable → baseline → alert → evidence → care
-              </span>
+              <span className="gt-bst">that actually lands</span>
             </motion.h1>
 
-            <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.2 }}
-              className="text-base sm:text-lg leading-relaxed max-w-lg"
-              style={{ color: 'var(--text-2)', letterSpacing: '-0.01em' }}>
-              <strong style={{ color: 'var(--text)' }}>Boston Study Tour Hackathon Challenge</strong> — TempoHealth learns{' '}
-              <em>your</em> cardiac baseline from longitudinal wearables, surfaces human-in-the-loop decisions, and grounds every flag in retrievable clinical evidence.
-            </motion.p>
+            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.14 }}>
+              <HeroPipelineStrip />
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.22 }}
+              className="space-y-4 max-w-xl pt-1">
+              <div
+                className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 border text-[11px] font-semibold uppercase tracking-[0.14em]"
+                style={{
+                  borderColor: 'var(--border-2)',
+                  color: 'var(--text-3)',
+                  background: 'var(--surface)',
+                }}
+              >
+                <span className="hidden sm:inline">Boston Study Tour</span>
+                <span className="sm:hidden">BST</span>
+                <span className="opacity-40">·</span>
+                <span className="normal-case tracking-normal font-medium" style={{ color: 'var(--text-2)' }}>
+                  Hackathon Challenge
+                </span>
+              </div>
+              <p
+                className="text-[15px] sm:text-[17px] leading-[1.65] font-normal"
+                style={{ color: 'var(--text-2)', letterSpacing: '-0.015em' }}
+              >
+                TempoHealth learns <em className="not-italic font-semibold" style={{ color: 'var(--text)' }}>your</em> cardiac
+                baseline from longitudinal wearables. Clinicians review every meaningful flag in the loop — and each explanation
+                stays grounded in retrievable clinical evidence.
+              </p>
+            </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
